@@ -10,7 +10,7 @@ subroutine bc_const_temp_both_sides(A, b, temp_l, temp_r, k, area, dx, Nx, q)
   Mat, intent(inout) :: A
   Vec, intent(inout) :: b
   PetscInt, intent(in) :: Nx 
-  PetscReal, intent(in) :: temp_l, temp_r, k, area, dx, q
+  PetscReal, intent(in) :: temp_l, temp_r, k, area, dx, q 
   PetscReal val(2), ka_dx, sp, su, ae, aw, ap
   PetscMPIInt rank, num_procs
   PetscInt col_idx(2)
@@ -52,7 +52,8 @@ program main
 
   PetscInt Nx, i, Istart, Iend, col_idx(3), rank, num_procs
   PetscErrorCode ierr 
-  PetscReal dx, xl, xr, start_time, anal_term1, anal_term2, start_tot_time 
+  PetscReal dx, xl, xr, start_time, anal_term1, anal_term2, start_tot_time, &
+    resid_precond_norm
   PetscReal, allocatable, dimension(:) :: grid
   PetscScalar, pointer :: soln(:)
   PetscScalar k, ap, ae, aw, su, sp, area, ka_dx, Tlb, Trb, val(3), zero, q
@@ -204,6 +205,12 @@ program main
     ! call VecView(vout, PETSC_ViEWER_STDOUT_WORLD, ierr)
   !  print*, soln
   !endif
+  
+  call KSPGetResidualNorm(ksp, resid_precond_norm, ierr) 
+  
+  if(rank == 0) then 
+    print*, "Preconditioned residual norm: ", resid_precond_norm 
+  endif
 
   !writing to file 
   if(rank==0) then
